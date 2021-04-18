@@ -1,10 +1,34 @@
 # Wafflegram
 
-## What it is
+**Very WIP!**
+
+This is also serving as a development space for "declarative layers" in Earthstar.
+
+## What it will be
+
+An [Earthstar](https://github.com/earthstar-project/earthstar) app.
 
 A grid that you and your friends can put images into.
 
-TODO: screenshot
+This is meant as an ambient display, like a digital photo frame collaboratively filled by you and your friends.
+
+The grid is a fixed size and layout, typically 3x3, but adjustable.  It always scales to fill the window with no cropping.
+
+Anyone can put images in any cell of the grid.  Images are always square.
+
+You can modify any cell at any time by overwriting it with a new image.  Old images are not kept; the patchwork evolves over time.
+
+Each cell can also have a text caption.
+
+You can maximize a cell to fill the screen.  This is useful if you're building an actual grid of physical devices like old iPads.
+
+## Mockup
+
+In this mockup the center-right cell is showing its "options" view -- this is how you modify a cell.
+
+Images from random places around the web, sorry for lazy lack of copyright information gathering, I will replace with with a better mockup soon.
+
+![](mockup.jpg)
 
 ## How to use it
 
@@ -16,12 +40,16 @@ TODO: screenshot
 
 ## Tech details related to Earthstar
 
-Document paths look like:
+At first there will only be one grid in a workspace.  Later we may allow more than one.
+
+Document paths:
 ```
     /wafflegram-v1/grid:main/settings.json
     /wafflegram-v1/grid:main/cell:1:1/image.jpg
     /wafflegram-v1/grid:main/cell:1:1/caption.txt
 ```
+
+Images will be resized to small square low quality JPGs to keep the size under 100kb.  They will be stored as base64 in Earthstar.
 
 ---
 ---
