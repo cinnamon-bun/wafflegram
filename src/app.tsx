@@ -9,13 +9,12 @@ import {
 import { setLogLevels } from 'earthstar';
 
 import {
-    TimerApp
-} from './buntimer';
+    WafflegramGrid
+} from './wafflegram';
 
 import 'react-earthstar/styles/layout.css';
 import 'react-earthstar/styles/junior.css';
 import './css/earthbar-override.css';
-
 
 function App() {
     // 0: error, 1: warn, 2: log, 3: debug
@@ -25,16 +24,16 @@ function App() {
         storage: 2,
         _other: 2
     });
-    const initValues = useLocalStorageEarthstarSettings('buntimer');
+    const initValues = useLocalStorageEarthstarSettings('wafflegram');
     return (
         <div className="root">
             <EarthstarPeer {...initValues}>
                 <div id="earthbar-root">
                     <Earthbar />
                 </div>
-                <LocalStorageSettingsWriter storageKey="buntimer" />
+                <LocalStorageSettingsWriter storageKey="wafflegram" />
                 <div id="app-root">
-                    <TimerApp />
+                    <WafflegramGrid />
                 </div>
             </EarthstarPeer>
         </div>

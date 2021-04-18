@@ -123,30 +123,6 @@
     --cLinkExt:   var(--base0D);  /* blue */
                    /* --base0E       purple */
     --cCode:      var(--base0F);  /* magenta or brown */
-
-    --cRelax: #224024;  /* green */
-    --cSoon: #b80;  /* yellow */
-    --cLate: #c22;  /* red */
-    --cDone: #222;  /* dark gray */
-
-    /*
-    export let PIECHART_DURATION = 60 * MINUTE;
-    export let cDATAVIZ_BACKGROUND = 'black';
-    export let cELAPSED = 'rgba(0, 0, 0, 0.8)';  // slightly transparent black
-    export let cGOOD = '#224024';  // green
-    export let cWARNING = '#bb0';  // yellow
-    export let cBAD = '#e80202';  // red
-    export let cBAD_ALT = '#9c0020';
-    export let cSTALE = '#a35';  // reddish gray
-    export let cPIE_TEXT = 'rgba(255,255,255,0.2)';
-    */
-
-    /*
-    --cRelax: #25422c;
-    --cSoon: var(--base0A);
-    --cLate: var(--base08);
-    --cDone: var(--base02);
-    */
 }
 
 * {
