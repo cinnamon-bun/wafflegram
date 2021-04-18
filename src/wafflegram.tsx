@@ -49,7 +49,7 @@ interface Cell {
     y: number,
     kind: CellKind,
     content: string,
-    text: string,
+    caption?: string,
 }
 
 //================================================================================
@@ -111,15 +111,15 @@ class GridLayer {
         }
 
         if (config.FAKE_DATA) {
-            this.cells.set('0-0', { x: 0, y: 0, kind: CellKind.Blank, content: '', text: '00 top left' });
-            this.cells.set('1-0', { x: 1, y: 0, kind: CellKind.Blank, content: '', text: '10' });
-            this.cells.set('2-0', { x: 2, y: 0, kind: CellKind.Blank, content: '', text: '20 top right' });
-            this.cells.set('0-1', { x: 0, y: 1, kind: CellKind.Blank, content: '', text: '01' });
-            this.cells.set('1-1', { x: 1, y: 1, kind: CellKind.Blank, content: '', text: '11 center' });
-            this.cells.set('2-1', { x: 2, y: 1, kind: CellKind.Blank, content: '', text: '21' });
-            this.cells.set('0-2', { x: 0, y: 2, kind: CellKind.Blank, content: '#334455', text: '02 bot left' });
-            this.cells.set('1-2', { x: 1, y: 2, kind: CellKind.Blank, content: '#445566', text: '12' });
-            this.cells.set('2-2', { x: 2, y: 2, kind: CellKind.Blank, content: '#557799', text: '22 bot right' });
+            this.cells.set('0-0', { x: 0, y: 0, kind: CellKind.Blank, content: '', caption: '00 top left' });
+            this.cells.set('1-0', { x: 1, y: 0, kind: CellKind.Blank, content: '', });
+            this.cells.set('2-0', { x: 2, y: 0, kind: CellKind.Blank, content: '', caption: '20 top right with long caption that will word-wrap' });
+            this.cells.set('0-1', { x: 0, y: 1, kind: CellKind.Blank, content: '', });
+            this.cells.set('1-1', { x: 1, y: 1, kind: CellKind.Blank, content: '', caption: '11 center' });
+            this.cells.set('2-1', { x: 2, y: 1, kind: CellKind.Url, content: 'https://d.furaffinity.net/art/seyorrol/1609783106/1609783106.seyorrol_commissiondeo_01.jpg', caption: 'an image provided by URL' });
+            this.cells.set('0-2', { x: 0, y: 2, kind: CellKind.Blank, content: '#334455', caption: '02 bot left' });
+            this.cells.set('1-2', { x: 1, y: 2, kind: CellKind.Blank, content: '#445566', caption: '' });
+            this.cells.set('2-2', { x: 2, y: 2, kind: CellKind.Blank, content: '#557799', caption: '22 bot right' });
         }
 
         logLayer(`hatch: sleeping, almost done`);
@@ -213,21 +213,30 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
     let cells: Cell[] = [...layer.cells.values()];
 
     let sGrid: CSSProperties = {
-        backgroundColor: 'var(--gr4)',
         display: 'grid',
         gridAutoColumns: '1fr',
         gridAutoRows: '1fr',
-        height: '100vw',
-        width: '100vw',
+
         gap: 'var(--s2)',
         marginTop: 'var(--s2)',
         padding: 'var(--s2)',
+
+        // todo: https://css-tricks.com/aspect-ratio-boxes/
+        height: '100vw',
+        width: '100vw',
+
+        backgroundColor: 'var(--gr4)',
     };
     let sCell: CSSProperties = {
         backgroundColor: 'var(--gr5)',
         borderRadius: 4,
         overflow: 'hidden',
     };
+    let sCaption: CSSProperties = {
+        background: 'rgba(0, 0, 0, 0.6)',
+        padding: 'var(--s1)',
+        textAlign: 'center',
+    }
 
     return <div>
         <div style={sGrid}>
@@ -237,16 +246,21 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
                         gridColumn: cell.x + 1,
                         gridRow: cell.y + 1,
                 };
-                if (cell.kind === CellKind.Blank) {
-                    if (cell.content !== '') {
-                        st.backgroundColor = cell.content;
-                    }
+                if (cell.kind === CellKind.Blank && cell.content !== '') {
+                    st.backgroundColor = cell.content;
+                }
+                if (cell.kind === CellKind.Url && cell.content !== '') {
+                    delete st.backgroundColor;
+                    st.background = `center / cover no-repeat url(${cell.content})`;
                 }
                 console.log(st);
                 return <div style={st} key={''+cell.x+'-'+cell.y}>
+                    {(cell.caption !== undefined && cell.caption !== '') ?
+                        <div style={sCaption}>{cell.caption}</div>
+                        : null
+                    }
                     <b>CELL {cell.x}-{cell.y}</b>
                     <br/>
-                    <span>{cell.text}</span>
                     <br/>
                     <span>{JSON.stringify(cell)}</span>
                 </div>
