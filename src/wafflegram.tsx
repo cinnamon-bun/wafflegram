@@ -1,10 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, CSSProperties } from 'react';
 
 import {
+    AuthorKeypair,
+    isErr,
     IStorageAsync,
     Query,
     queryByTemplateAsync,
     sleep,
+    WriteResult,
 } from 'earthstar';
 import {
     useCurrentAuthor,
@@ -37,15 +40,15 @@ interface GridConfig {
     numY: number,
 }
 enum CellKind {
-    Url,
-    Blank,
-    Image,
+    Url,    // content is a url to an image
+    Blank,  // content is a color like #ff9900, or ''
+    Image,  // content is b64 image data
 }
 interface Cell {
     x: number,
     y: number,
     kind: CellKind,
-    content: string,  // url or image b64
+    content: string,
     text: string,
 }
 
@@ -114,9 +117,9 @@ class GridLayer {
             this.cells.set('0-1', { x: 0, y: 1, kind: CellKind.Blank, content: '', text: '01' });
             this.cells.set('1-1', { x: 1, y: 1, kind: CellKind.Blank, content: '', text: '11 center' });
             this.cells.set('2-1', { x: 2, y: 1, kind: CellKind.Blank, content: '', text: '21' });
-            this.cells.set('0-2', { x: 0, y: 2, kind: CellKind.Blank, content: '', text: '02 bot left' });
-            this.cells.set('1-2', { x: 1, y: 2, kind: CellKind.Blank, content: '', text: '12' });
-            this.cells.set('2-2', { x: 2, y: 2, kind: CellKind.Blank, content: '', text: '22 bot right' });
+            this.cells.set('0-2', { x: 0, y: 2, kind: CellKind.Blank, content: '#334455', text: '02 bot left' });
+            this.cells.set('1-2', { x: 1, y: 2, kind: CellKind.Blank, content: '#445566', text: '12' });
+            this.cells.set('2-2', { x: 2, y: 2, kind: CellKind.Blank, content: '#557799', text: '22 bot right' });
         }
 
         logLayer(`hatch: sleeping, almost done`);
@@ -125,42 +128,18 @@ class GridLayer {
         this.isReady = true;
         return true;
     }
-}
-
-/*
-class TimerApi {
-    static makeNew(id?: string): Timer {
-        return {
-            id: id || '' + Math.floor(Math.random() * 999999999999),
-            endTime: Date.now() + 90 * MIN,
-            name: 'new timer',
-            isDone: false,
-        };
-    }
-    static async save(keypair: AuthorKeypair, storage: IStorageAsync, timer: Timer): Promise<void> {
-        let result = await storage.set(keypair, {
+    async saveCell(keypair: AuthorKeypair, cell: Cell) {
+        let cellPath = `/wafflegram-v1/grid:${this.gridName}/cell:{x}-{y}.json`;
+        let result = await this.storage.set(keypair, {
             format: 'es.4',
-            path: `/buntimer-v1/timers/common/${timer.id}!.json`,
-            content: JSON.stringify(timer),
-            deleteAfter: (Date.now() + 7 * DAY) * 1000,
-        });
-        if (isErr(result) || result === WriteResult.Ignored) {
-            console.error(result);
-        }
-    }
-    static async delete(keypair: AuthorKeypair, storage: IStorageAsync, id: string): Promise<void> {
-        let result = await storage.set(keypair, {
-            format: 'es.4',
-            path: `/buntimer-v1/timers/common/${id}!.json`,
-            content: '',
-            deleteAfter: (Date.now() + 7 * DAY) * 1000,
+            path: cellPath,
+            content: JSON.stringify(cell),
         });
         if (isErr(result) || result === WriteResult.Ignored) {
             console.error(result);
         }
     }
 }
-*/
 
 //================================================================================
 
@@ -230,17 +209,54 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
 
     logGrid('layer is ready, showing actual grid');
     logGrid('//// render complete ////');
+
+    let cells: Cell[] = [...layer.cells.values()];
+
+    let sGrid: CSSProperties = {
+        backgroundColor: 'var(--gr4)',
+        display: 'grid',
+        gridAutoColumns: '1fr',
+        gridAutoRows: '1fr',
+        height: '100vw',
+        width: '100vw',
+        gap: 'var(--s2)',
+        marginTop: 'var(--s2)',
+        padding: 'var(--s2)',
+    };
+    let sCell: CSSProperties = {
+        backgroundColor: 'var(--gr5)',
+        borderRadius: 4,
+        overflow: 'hidden',
+    };
+
     return <div>
+        <div style={sGrid}>
+            {cells.map(cell => {
+                let st: CSSProperties = {
+                        ...sCell,
+                        gridColumn: cell.x + 1,
+                        gridRow: cell.y + 1,
+                };
+                if (cell.kind === CellKind.Blank) {
+                    if (cell.content !== '') {
+                        st.backgroundColor = cell.content;
+                    }
+                }
+                console.log(st);
+                return <div style={st} key={''+cell.x+'-'+cell.y}>
+                    <b>CELL {cell.x}-{cell.y}</b>
+                    <br/>
+                    <span>{cell.text}</span>
+                    <br/>
+                    <span>{JSON.stringify(cell)}</span>
+                </div>
+            })}
+        </div>
+
         <pre>{`
 grid name: ${layer.gridName}
 is ready: ${'' + layer.isReady}
 config: ${JSON.stringify(layer.config, null, 4)}
         `}</pre>
-        {[...layer.cells.values()].map(cell =>
-            <div key={''+cell.x+'-'+cell.y}>
-                <b>CELL</b>
-                <code>{JSON.stringify(cell)}</code>
-            </div>
-        )};
     </div>
 };
