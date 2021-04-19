@@ -217,7 +217,7 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: GridProps) => 
         gridAutoColumns: '1fr',
         gridAutoRows: '1fr',
 
-        gap: 'var(--s1)',
+        gap: 'var(--s05)',
         //marginTop: 'var(--s1)',
         padding: 'var(--s3)',
         margin: '0 auto',
@@ -229,7 +229,7 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: GridProps) => 
         height: 'min(100vw, 85vh)',
         width: 'min(100vw, 85vh)',
 
-        //backgroundColor: 'var(--gr4)',
+        backgroundColor: 'var(--cGridBorder)',
     };
 
     let cells: Cell[] = [...layer.cells.values()];
@@ -273,28 +273,31 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
     logCell(`${cell.x}-${cell.y} -- ${cell.kind}`);
 
     let sCell: CSSProperties = {
-        backgroundColor: 'var(--gr5)',
-        borderRadius: 4,
+        backgroundColor: 'var(--cEmptyCell)',
+        borderRadius: 'var(--round-card)',
         overflow: 'hidden',
         position: 'relative',
     };
     let sCaption: CSSProperties = {
+        color: 'var(--cSemiFaint)',
         position: 'absolute',
         bottom: 0, left: 0, right: 0,
-        background: 'rgba(0, 0, 0, 0.6)',
+        background: 'var(--cUnderlayWeak)',
         padding: 'var(--s1)',
         textAlign: 'center',
     }
     let sCloseButton: CSSProperties = {
         position: 'absolute',
+        color: 'var(--cSemiFaint)',
         top: 0, right: 0,
-        background: 'rgba(0, 0, 0, 0.6)',
-        padding: 'var(--s2)',
+        width: 'max(40px, 7%)',
+        height: 'max(40px, 7%)',
+        background: 'var(--cUnderlayStrong)',
         textAlign: 'center',
-        color: 'inherit',
         border: 'inherit',
         fontFamily: 'inherit',
-        fontSize: 'inherit',
+        fontSize: '1.5rem',
+        borderBottomLeftRadius: 'var(--round-button)',
     }
 
     // set grid position
@@ -330,7 +333,7 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
         sCell.background = `center / cover no-repeat url(${url})`;
     }
 
-
+    let X = '\u2716';
     return <div style={sCell} onClick={onMaximize}>
         {/* caption bar, if needed */}
         {(cell.caption !== undefined && cell.caption !== '')
@@ -342,7 +345,7 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
             ? <button style={sCloseButton}
                 onClick={ (evt) => {evt.stopPropagation(); onMinimize(); }}
                 >
-                    X
+                    {X}
                 </button>
             : null
         }

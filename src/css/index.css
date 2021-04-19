@@ -5,6 +5,7 @@
 
     /* sizes / spacings */
     --s0: 0px;
+    --s05: 3px;
     --s1: 5px;
     --s2: 10px;
     --s3: 20px;
@@ -111,9 +112,15 @@
     --cPage: var(--base00);
     --cCard: var(--base01);
 
+    --cGridBorder: var(--base00);
+    --cEmptyCell: var(--base01);
+
     --cFaint: var(--base03);
     --cSemiFaint: var(--base05);
     --cText: var(--base07);
+
+    --cUnderlayWeak: rgba(0, 0, 0, 0.6);
+    --cUnderlayStrong: rgba(0, 0, 0, 0.77);
 
                    /* --base08       red */
     --cCardTitle: var(--base09);  /* orange */
