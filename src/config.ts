@@ -646,7 +646,7 @@ export let FAKE_DATA_CELLS: Record<string, Cell> = {
     '0-1': { x: 0, y: 1, kind: 'IMAGE_B64', content: img64otter, caption: 'image from b64', },
     '1-1': { x: 1, y: 1, kind: 'COLOR', content: '', caption: 'click a cell to maximize it' },
     '2-1': { x: 2, y: 1, kind: 'IMAGE_URL', content: 'https://d.furaffinity.net/art/seyorrol/1609783106/1609783106.seyorrol_commissiondeo_01.jpg', caption: 'image from external URL' },
-    '0-2': { x: 0, y: 2, kind: 'COLOR', content: '#334455', caption: 'this is the bottom left cell' },
+    '0-2': { x: 0, y: 2, kind: 'IMAGE_URL', content: 'https://d.furaffinity.net/art/seyorrol/1609783106/1609783106.seyorrol_commissiondeo_01.jpg'},
     '1-2': { x: 1, y: 2, kind: 'COLOR', content: '#445566' },
     '2-2': { x: 2, y: 2, kind: 'COLOR', content: '#557799', caption: 'blank cells can have solid color backgrounds' },
 };

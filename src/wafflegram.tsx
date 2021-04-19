@@ -336,13 +336,22 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
         sCell.background = `center / cover no-repeat url(${url})`;
     }
 
+    let hasCaption = cell.caption !== undefined && cell.caption !== '';
+    let captionWithLink = <div style={sCaption}>
+        {cell.caption}
+        {(cell.kind === 'IMAGE_URL' && cell.content !== '')
+            ? <span> &nbsp; <a href={cell.content}>(link)</a></span>
+            : null
+        }
+    </div>;
+    let showCaption = hasCaption || (isMaximized && cell.kind === 'IMAGE_URL' && cell.content !== '');
+
+
     let X = '\u2716';
     return <div style={sCell} onClick={onMaximize}>
         {/* caption bar, if needed */}
-        {(cell.caption !== undefined && cell.caption !== '')
-            ? <div style={sCaption}>{cell.caption}</div>
-            : null
-        }
+        {showCaption ? captionWithLink : null }
+
         {/* minimize button, if needed */}
         {isMaximized
             ? <button style={sCloseButton}
