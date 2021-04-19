@@ -3,11 +3,12 @@ export interface GridConfig {
     numX: number,
     numY: number,
 }
-export enum CellKind {
-    Url,    // content is a url to an image
-    Color,  // content is a color like #ff9900, or ''
-    B64Image,  // content is b64 image data
-}
+
+export type CellKind =
+    'IMAGE_URL'  // url to an image on the web
+    | 'COLOR'  // '#ff9900', or '' for blank
+    | 'IMAGE_B64';  // raw b64 image data in jpeg format but with no mimetype or anything
+
 export interface Cell {
     x: number,
     y: number,

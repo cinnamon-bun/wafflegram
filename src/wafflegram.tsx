@@ -20,6 +20,7 @@ import {
     useStorage,
 } from 'react-earthstar';
 
+/*
 import {
     Stack,
     Box,
@@ -27,12 +28,14 @@ import {
     Cluster,
     ClusterStretch,
 } from './lib/layouts';
+*/
 
 import {
     Cell,
     CellKind,
     GridConfig
 } from './wafflegramTypes';
+
 import {
     config,
     FAKE_DATA_CELLS
@@ -72,6 +75,10 @@ class GridLayer {
         logLayer(`hatch: sleeping`);
         //await sleep(1000);
 
+        // load grid config from earthstar doc
+        // TODO: hardcode this for now until we have a UI for changing it.
+        this.config = { numX: 3, numY: 3 };
+        /*
         logLayer(`hatch: loading config`, this.id);
         let configPath = `/wafflegram-v1/grid:${this.gridName}/config.json`;
         this.config = { numX: 3, numY: 3 };
@@ -88,25 +95,28 @@ class GridLayer {
             console.error('problem while loading config', err);
         }
         logLayer(`hatch: config =`, this.config);
+        */
 
-        logLayer(`hatch: loading cells`);
-        let cellPath = `/wafflegram-v1/grid:${this.gridName}/cell:{x}-{y}.json`;
-        let cellDocs = await queryByTemplateAsync(this.storage, cellPath, { contentLengthGt: 0 });
-        for (let doc of cellDocs) {
-            try {
-                let cell: Cell = JSON.parse(doc.content);
-                let id = `${cell.x}-${cell.y}`;
-                logLayer(`hatch: cell ${id} =`, cell);
-                this.cells.set(id, cell);
-            } catch(err) {
-                console.error('problem while loading cell', err);
-            }
-        }
-
-        // load fake data
         if (config.USE_FAKE_DATA) {
+            // load fake data
+            logLayer(`hatch: loading fake data for cells`);
             for (let [k, v] of Object.entries(FAKE_DATA_CELLS)) {
                 this.cells.set(k, v);
+            }
+        } else {
+            // load cells from earthstar docs
+            logLayer(`hatch: loading cells`);
+            let cellPath = `/wafflegram-v1/grid:${this.gridName}/cell:{x}-{y}.json`;
+            let cellDocs = await queryByTemplateAsync(this.storage, cellPath, { contentLengthGt: 0 });
+            for (let doc of cellDocs) {
+                try {
+                    let cell: Cell = JSON.parse(doc.content);
+                    let id = `${cell.x}-${cell.y}`;
+                    logLayer(`hatch: cell ${id} =`, cell);
+                    this.cells.set(id, cell);
+                } catch(err) {
+                    console.error('problem while loading cell', err);
+                }
             }
         }
 
@@ -257,7 +267,7 @@ interface CellProps {
 }
 let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
     let { cell, isMaximized, onMaximize, onMinimize } = props;
-    logCell(`${cell.x}-${cell.y}`);
+    logCell(`${cell.x}-${cell.y} -- ${cell.kind}`);
 
     let sCell: CSSProperties = {
         backgroundColor: 'var(--gr5)',
@@ -290,14 +300,14 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
             gridRow: cell.y + 1,
         };
     }
-    if (cell.kind === CellKind.Color && cell.content !== '') {
+    if (cell.kind === 'COLOR' && cell.content !== '') {
         st.backgroundColor = cell.content;
     }
-    if (cell.kind === CellKind.Url && cell.content !== '') {
+    if (cell.kind === 'IMAGE_URL' && cell.content !== '') {
         delete st.backgroundColor;
         st.background = `center / cover no-repeat url(${cell.content})`;
     }
-    if (cell.kind === CellKind.B64Image && cell.content !== '') {
+    if (cell.kind === 'IMAGE_B64' && cell.content !== '') {
         let url = 'data:image/jpeg;base64,' + cell.content;
         st.background = `center / cover no-repeat url(${url})`;
     }
