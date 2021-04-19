@@ -217,18 +217,19 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: GridProps) => 
         gridAutoColumns: '1fr',
         gridAutoRows: '1fr',
 
-        gap: 'var(--s2)',
-        marginTop: 'var(--s2)',
-        padding: 'var(--s2)',
+        gap: 'var(--s1)',
+        //marginTop: 'var(--s1)',
+        padding: 'var(--s3)',
+        margin: '0 auto',
 
         // todo: https://css-tricks.com/aspect-ratio-boxes/
         // https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit  -- works everywhere
         // https://developer.mozilla.org/en-US/docs/Web/CSS/aspect-ratio  -- not on firefox yet
         // https://web.dev/aspect-ratio/
-        height: '100vw',
-        width: '100vw',
+        height: 'min(100vw, 85vh)',
+        width: 'min(100vw, 85vh)',
 
-        backgroundColor: 'var(--gr4)',
+        //backgroundColor: 'var(--gr4)',
     };
 
     let cells: Cell[] = [...layer.cells.values()];
@@ -251,11 +252,13 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: GridProps) => 
             )}
         </div>
 
+        {/*
         <pre>{`
 grid name: ${layer.gridName}
 is ready: ${'' + layer.isReady}
 config: ${JSON.stringify(layer.config, null, 4)}
         `}</pre>
+        */}
     </div>
 };
 
@@ -282,36 +285,6 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
         padding: 'var(--s1)',
         textAlign: 'center',
     }
-
-    let st: CSSProperties = sCell;
-    if (isMaximized) {
-        // when maximized, it's the only cell
-        // and it's in slot 1-1
-        st = {
-            ...st,
-            gridColumn: 1,
-            gridRow: 1,
-        };
-    } else {
-        // otherwise it's in its normal slot
-        st = {
-            ...st,
-            gridColumn: cell.x + 1,
-            gridRow: cell.y + 1,
-        };
-    }
-    if (cell.kind === 'COLOR' && cell.content !== '') {
-        st.backgroundColor = cell.content;
-    }
-    if (cell.kind === 'IMAGE_URL' && cell.content !== '') {
-        delete st.backgroundColor;
-        st.background = `center / cover no-repeat url(${cell.content})`;
-    }
-    if (cell.kind === 'IMAGE_B64' && cell.content !== '') {
-        let url = 'data:image/jpeg;base64,' + cell.content;
-        st.background = `center / cover no-repeat url(${url})`;
-    }
-
     let sCloseButton: CSSProperties = {
         position: 'absolute',
         top: 0, right: 0,
@@ -324,7 +297,41 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
         fontSize: 'inherit',
     }
 
-    return <div style={st} onClick={onMaximize}>
+    // set grid position
+    if (isMaximized) {
+        // when maximized, it's the only cell
+        // and it's in slot 1-1
+        sCell = {
+            ...sCell,
+            gridColumn: 1,
+            gridRow: 1,
+        };
+    } else {
+        // otherwise it's in its normal slot
+        sCell = {
+            ...sCell,
+            gridColumn: cell.x + 1,
+            gridRow: cell.y + 1,
+        };
+    }
+
+    // set background color or image
+    if (cell.kind === 'COLOR' && cell.content !== '') {
+        sCell.backgroundColor = cell.content;
+    }
+    if (cell.kind === 'IMAGE_URL' && cell.content !== '') {
+        delete sCell.backgroundColor;
+        // crop image to fill entire square with no letterboxing
+        sCell.background = `center / cover no-repeat url(${cell.content})`;
+    }
+    if (cell.kind === 'IMAGE_B64' && cell.content !== '') {
+        let url = 'data:image/jpeg;base64,' + cell.content;
+        // crop image to fill entire square with no letterboxing
+        sCell.background = `center / cover no-repeat url(${url})`;
+    }
+
+
+    return <div style={sCell} onClick={onMaximize}>
         {/* caption bar, if needed */}
         {(cell.caption !== undefined && cell.caption !== '')
             ? <div style={sCaption}>{cell.caption}</div>
