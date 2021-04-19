@@ -1,6 +1,11 @@
+import {
+    Cell,
+    CellKind,
+    GridConfig,
+} from './wafflegramTypes';
 
 export let config = {
-    FAKE_DATA: true,
+    USE_FAKE_DATA: true,
 };
 
 // this is image/jpeg
@@ -633,3 +638,15 @@ xAOOFb3NelcMOv7EKBslLFErKNzdIFsMOAsl3G5JWyhAQJjiOGZCfGITLrmPmFu6
 iP8ABCUqDtF1wSvkq2F5lt8wrbmGAbhM/KZUJXVlbibs9tMtfgJ//9k=
 `.replaceAll(/\n/g, '');
 console.log(img64otter);
+
+export let FAKE_DATA_CELLS: Record<string, Cell> = {
+    '0-0': { x: 0, y: 0, kind: CellKind.Color, content: '', caption: '00 top left' },
+    '1-0': { x: 1, y: 0, kind: CellKind.Color, content: '', },
+    '2-0': { x: 2, y: 0, kind: CellKind.Color, content: '', caption: '20 top right with long caption that will word-wrap' },
+    '0-1': { x: 0, y: 1, kind: CellKind.B64Image, content: img64otter, caption: 'b64 image', },
+    '1-1': { x: 1, y: 1, kind: CellKind.Color, content: '', caption: '11 center' },
+    '2-1': { x: 2, y: 1, kind: CellKind.Url, content: 'https://d.furaffinity.net/art/seyorrol/1609783106/1609783106.seyorrol_commissiondeo_01.jpg', caption: 'an image provided by URL' },
+    '0-2': { x: 0, y: 2, kind: CellKind.Color, content: '#334455', caption: '02 bot left' },
+    '1-2': { x: 1, y: 2, kind: CellKind.Color, content: '#445566', caption: '' },
+    '2-2': { x: 2, y: 2, kind: CellKind.Color, content: '#557799', caption: '22 bot right' },
+};

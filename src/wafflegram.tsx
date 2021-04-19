@@ -28,7 +28,15 @@ import {
     ClusterStretch,
 } from './lib/layouts';
 
-import { config, img64otter } from './config';
+import {
+    Cell,
+    CellKind,
+    GridConfig
+} from './wafflegramTypes';
+import {
+    config,
+    FAKE_DATA_CELLS
+} from './config';
 
 //================================================================================
 // LOG
@@ -36,26 +44,6 @@ import { config, img64otter } from './config';
 let logGrid = (...args: any[]) => console.log('[grid]', ...args);
 let logCell = (...args: any[]) => console.log('  [cell]', ...args);
 let logLayer = (...args: any[]) => console.log('    [layer]', ...args);
-
-//================================================================================
-// TYPES
-
-interface GridConfig {
-    numX: number,
-    numY: number,
-}
-enum CellKind {
-    Url,    // content is a url to an image
-    Color,  // content is a color like #ff9900, or ''
-    B64Image,  // content is b64 image data
-}
-interface Cell {
-    x: number,
-    y: number,
-    kind: CellKind,
-    content: string,
-    caption?: string,
-}
 
 //================================================================================
 
@@ -115,16 +103,11 @@ class GridLayer {
             }
         }
 
-        if (config.FAKE_DATA) {
-            this.cells.set('0-0', { x: 0, y: 0, kind: CellKind.Color, content: '', caption: '00 top left' });
-            this.cells.set('1-0', { x: 1, y: 0, kind: CellKind.Color, content: '', });
-            this.cells.set('2-0', { x: 2, y: 0, kind: CellKind.Color, content: '', caption: '20 top right with long caption that will word-wrap' });
-            this.cells.set('0-1', { x: 0, y: 1, kind: CellKind.B64Image, content: img64otter, caption: 'b64 image', });
-            this.cells.set('1-1', { x: 1, y: 1, kind: CellKind.Color, content: '', caption: '11 center' });
-            this.cells.set('2-1', { x: 2, y: 1, kind: CellKind.Url, content: 'https://d.furaffinity.net/art/seyorrol/1609783106/1609783106.seyorrol_commissiondeo_01.jpg', caption: 'an image provided by URL' });
-            this.cells.set('0-2', { x: 0, y: 2, kind: CellKind.Color, content: '#334455', caption: '02 bot left' });
-            this.cells.set('1-2', { x: 1, y: 2, kind: CellKind.Color, content: '#445566', caption: '' });
-            this.cells.set('2-2', { x: 2, y: 2, kind: CellKind.Color, content: '#557799', caption: '22 bot right' });
+        // load fake data
+        if (config.USE_FAKE_DATA) {
+            for (let [k, v] of Object.entries(FAKE_DATA_CELLS)) {
+                this.cells.set(k, v);
+            }
         }
 
         logLayer(`hatch: sleeping, almost done`);
