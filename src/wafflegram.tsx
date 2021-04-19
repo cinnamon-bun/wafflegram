@@ -281,7 +281,8 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
         st.background = `center / cover no-repeat url(${cell.content})`;
     }
     if (cell.kind === CellKind.B64Image && cell.content !== '') {
-        // TODO: ?
+        let url = 'data:image/jpeg;base64,' + cell.content;
+        st.background = `center / cover no-repeat url(${url})`;
     }
 
     console.log(st);

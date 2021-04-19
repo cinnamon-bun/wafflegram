@@ -3,6 +3,7 @@ export let config = {
     FAKE_DATA: true,
 };
 
+// this is image/jpeg
 export let img64otter = `
 /9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgG
 BgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMD
