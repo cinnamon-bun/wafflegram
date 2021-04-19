@@ -24,12 +24,13 @@ import {
     ClusterStretch,
 } from './lib/layouts';
 
-import { config } from './config';
+import { config, img64otter } from './config';
 
 //================================================================================
 // LOG
 
 let logGrid = (...args: any[]) => console.log('[grid]', ...args);
+let logCell = (...args: any[]) => console.log('  [cell]', ...args);
 let logLayer = (...args: any[]) => console.log('    [layer]', ...args);
 
 //================================================================================
@@ -41,8 +42,8 @@ interface GridConfig {
 }
 enum CellKind {
     Url,    // content is a url to an image
-    Blank,  // content is a color like #ff9900, or ''
-    Image,  // content is b64 image data
+    Color,  // content is a color like #ff9900, or ''
+    B64Image,  // content is b64 image data
 }
 interface Cell {
     x: number,
@@ -111,15 +112,15 @@ class GridLayer {
         }
 
         if (config.FAKE_DATA) {
-            this.cells.set('0-0', { x: 0, y: 0, kind: CellKind.Blank, content: '', caption: '00 top left' });
-            this.cells.set('1-0', { x: 1, y: 0, kind: CellKind.Blank, content: '', });
-            this.cells.set('2-0', { x: 2, y: 0, kind: CellKind.Blank, content: '', caption: '20 top right with long caption that will word-wrap' });
-            this.cells.set('0-1', { x: 0, y: 1, kind: CellKind.Blank, content: '', });
-            this.cells.set('1-1', { x: 1, y: 1, kind: CellKind.Blank, content: '', caption: '11 center' });
+            this.cells.set('0-0', { x: 0, y: 0, kind: CellKind.Color, content: '', caption: '00 top left' });
+            this.cells.set('1-0', { x: 1, y: 0, kind: CellKind.Color, content: '', });
+            this.cells.set('2-0', { x: 2, y: 0, kind: CellKind.Color, content: '', caption: '20 top right with long caption that will word-wrap' });
+            this.cells.set('0-1', { x: 0, y: 1, kind: CellKind.B64Image, content: img64otter, caption: 'b64 image', });
+            this.cells.set('1-1', { x: 1, y: 1, kind: CellKind.Color, content: '', caption: '11 center' });
             this.cells.set('2-1', { x: 2, y: 1, kind: CellKind.Url, content: 'https://d.furaffinity.net/art/seyorrol/1609783106/1609783106.seyorrol_commissiondeo_01.jpg', caption: 'an image provided by URL' });
-            this.cells.set('0-2', { x: 0, y: 2, kind: CellKind.Blank, content: '#334455', caption: '02 bot left' });
-            this.cells.set('1-2', { x: 1, y: 2, kind: CellKind.Blank, content: '#445566', caption: '' });
-            this.cells.set('2-2', { x: 2, y: 2, kind: CellKind.Blank, content: '#557799', caption: '22 bot right' });
+            this.cells.set('0-2', { x: 0, y: 2, kind: CellKind.Color, content: '#334455', caption: '02 bot left' });
+            this.cells.set('1-2', { x: 1, y: 2, kind: CellKind.Color, content: '#445566', caption: '' });
+            this.cells.set('2-2', { x: 2, y: 2, kind: CellKind.Color, content: '#557799', caption: '22 bot right' });
         }
 
         logLayer(`hatch: sleeping, almost done`);
@@ -148,10 +149,10 @@ let useForceRender = () => {
     return () => setN(n + 1);
 };
 
-interface WafflegramGridProps {
+interface GridProps {
     gridName?: string;
 }
-export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGridProps) => {
+export let WafflegramGrid: React.FunctionComponent<any> = (props: GridProps) => {
     logGrid('---- rendering ----');
 
     //let [currentWorkspace] = useCurrentWorkspace();
@@ -210,8 +211,6 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
     logGrid('layer is ready, showing actual grid');
     logGrid('//// render complete ////');
 
-    let cells: Cell[] = [...layer.cells.values()];
-
     let sGrid: CSSProperties = {
         display: 'grid',
         gridAutoColumns: '1fr',
@@ -230,6 +229,31 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
 
         backgroundColor: 'var(--gr4)',
     };
+
+    let cells: Cell[] = [...layer.cells.values()];
+    logGrid(`I have ${cells.length} cells`);
+    return <div>
+        <div style={sGrid}>
+            {cells.map(cell =>
+                <WafflegramCell key={`${cell.x}-${cell.y}`} cell={cell} />
+            )}
+        </div>
+
+        <pre>{`
+grid name: ${layer.gridName}
+is ready: ${'' + layer.isReady}
+config: ${JSON.stringify(layer.config, null, 4)}
+        `}</pre>
+    </div>
+};
+
+interface CellProps {
+    cell: Cell,
+}
+let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
+    let cell = props.cell;
+    logCell(`${cell.x}-${cell.y}`);
+
     let sCell: CSSProperties = {
         backgroundColor: 'var(--gr5)',
         borderRadius: 4,
@@ -244,35 +268,28 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
         textAlign: 'center',
     }
 
-    return <div>
-        <div style={sGrid}>
-            {cells.map(cell => {
-                let st: CSSProperties = {
-                        ...sCell,
-                        gridColumn: cell.x + 1,
-                        gridRow: cell.y + 1,
-                };
-                if (cell.kind === CellKind.Blank && cell.content !== '') {
-                    st.backgroundColor = cell.content;
-                }
-                if (cell.kind === CellKind.Url && cell.content !== '') {
-                    delete st.backgroundColor;
-                    st.background = `center / cover no-repeat url(${cell.content})`;
-                }
-                console.log(st);
-                return <div style={st} key={''+cell.x+'-'+cell.y}>
-                    {(cell.caption !== undefined && cell.caption !== '') ?
-                        <div style={sCaption}>{cell.caption}</div>
-                        : null
-                    }
-                </div>
-            })}
-        </div>
+    let st: CSSProperties = {
+            ...sCell,
+            gridColumn: cell.x + 1,
+            gridRow: cell.y + 1,
+    };
+    if (cell.kind === CellKind.Color && cell.content !== '') {
+        st.backgroundColor = cell.content;
+    }
+    if (cell.kind === CellKind.Url && cell.content !== '') {
+        delete st.backgroundColor;
+        st.background = `center / cover no-repeat url(${cell.content})`;
+    }
+    if (cell.kind === CellKind.B64Image && cell.content !== '') {
+        // TODO: ?
+    }
 
-        <pre>{`
-grid name: ${layer.gridName}
-is ready: ${'' + layer.isReady}
-config: ${JSON.stringify(layer.config, null, 4)}
-        `}</pre>
-    </div>
-};
+    console.log(st);
+
+    return <div style={st}>
+        {(cell.caption !== undefined && cell.caption !== '') ?
+            <div style={sCaption}>{cell.caption}</div>
+            : null
+        }
+    </div>;
+}
