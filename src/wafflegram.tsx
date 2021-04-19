@@ -1,13 +1,17 @@
-import React, { useState, useMemo, useEffect, CSSProperties } from 'react';
+import React, {
+    useState,
+    useMemo,
+    useEffect,
+    CSSProperties
+} from 'react';
 
 import {
     AuthorKeypair,
-    isErr,
     IStorageAsync,
-    Query,
-    queryByTemplateAsync,
-    sleep,
+    Thunk,
     WriteResult,
+    isErr,
+    queryByTemplateAsync,
 } from 'earthstar';
 import {
     useCurrentAuthor,
@@ -188,6 +192,10 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: GridProps) => 
         wait();
     }, [layer]);
 
+    let [maximizedCell, setMaximizedCell] = useState<Cell | null>(null);
+
+    //--------------------------------------------------------------------------------
+
     // if not set up yet, show help message
     //if (currentWorkspace === null || storage === null || keypair === null || layer === null) {
     if (storage === null || layer === null) {
@@ -231,11 +239,22 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: GridProps) => 
     };
 
     let cells: Cell[] = [...layer.cells.values()];
+    if (maximizedCell !== null) {
+        // hack
+        cells = [maximizedCell];
+    }
+
     logGrid(`I have ${cells.length} cells`);
     return <div>
         <div style={sGrid}>
             {cells.map(cell =>
-                <WafflegramCell key={`${cell.x}-${cell.y}`} cell={cell} />
+                <WafflegramCell
+                    key={`${cell.x}-${cell.y}`}
+                    cell={cell}
+                    isMaximized={maximizedCell === cell}
+                    onMaximize={() => setMaximizedCell(cell)}
+                    onMinimize={() => setMaximizedCell(null)}
+                />
             )}
         </div>
 
@@ -249,9 +268,12 @@ config: ${JSON.stringify(layer.config, null, 4)}
 
 interface CellProps {
     cell: Cell,
+    isMaximized: boolean,
+    onMaximize: Thunk,
+    onMinimize: Thunk,
 }
 let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
-    let cell = props.cell;
+    let { cell, isMaximized, onMaximize, onMinimize } = props;
     logCell(`${cell.x}-${cell.y}`);
 
     let sCell: CSSProperties = {
@@ -268,11 +290,23 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
         textAlign: 'center',
     }
 
-    let st: CSSProperties = {
-            ...sCell,
+    let st: CSSProperties = sCell;
+    if (isMaximized) {
+        // when maximized, it's the only cell
+        // and it's in slot 1-1
+        st = {
+            ...st,
+            gridColumn: 1,
+            gridRow: 1,
+        };
+    } else {
+        // otherwise it's in its normal slot
+        st = {
+            ...st,
             gridColumn: cell.x + 1,
             gridRow: cell.y + 1,
-    };
+        };
+    }
     if (cell.kind === CellKind.Color && cell.content !== '') {
         st.backgroundColor = cell.content;
     }
@@ -285,11 +319,31 @@ let WafflegramCell: React.FunctionComponent<any> = (props: CellProps) => {
         st.background = `center / cover no-repeat url(${url})`;
     }
 
-    console.log(st);
+    let sCloseButton: CSSProperties = {
+        position: 'absolute',
+        top: 0, right: 0,
+        background: 'rgba(0, 0, 0, 0.6)',
+        padding: 'var(--s2)',
+        textAlign: 'center',
+        color: 'inherit',
+        border: 'inherit',
+        fontFamily: 'inherit',
+        fontSize: 'inherit',
+    }
 
-    return <div style={st}>
-        {(cell.caption !== undefined && cell.caption !== '') ?
-            <div style={sCaption}>{cell.caption}</div>
+    return <div style={st} onClick={onMaximize}>
+        {/* caption bar, if needed */}
+        {(cell.caption !== undefined && cell.caption !== '')
+            ? <div style={sCaption}>{cell.caption}</div>
+            : null
+        }
+        {/* minimize button, if needed */}
+        {isMaximized
+            ? <button style={sCloseButton}
+                onClick={ (evt) => {evt.stopPropagation(); onMinimize(); }}
+                >
+                    X
+                </button>
             : null
         }
     </div>;
