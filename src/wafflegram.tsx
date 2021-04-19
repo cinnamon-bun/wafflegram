@@ -222,6 +222,9 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
         padding: 'var(--s2)',
 
         // todo: https://css-tricks.com/aspect-ratio-boxes/
+        // https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit  -- works everywhere
+        // https://developer.mozilla.org/en-US/docs/Web/CSS/aspect-ratio  -- not on firefox yet
+        // https://web.dev/aspect-ratio/
         height: '100vw',
         width: '100vw',
 
@@ -231,8 +234,11 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
         backgroundColor: 'var(--gr5)',
         borderRadius: 4,
         overflow: 'hidden',
+        position: 'relative',
     };
     let sCaption: CSSProperties = {
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0,
         background: 'rgba(0, 0, 0, 0.6)',
         padding: 'var(--s1)',
         textAlign: 'center',
@@ -259,10 +265,6 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: WafflegramGrid
                         <div style={sCaption}>{cell.caption}</div>
                         : null
                     }
-                    <b>CELL {cell.x}-{cell.y}</b>
-                    <br/>
-                    <br/>
-                    <span>{JSON.stringify(cell)}</span>
                 </div>
             })}
         </div>
