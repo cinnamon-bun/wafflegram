@@ -194,12 +194,15 @@ export let WafflegramGrid: React.FunctionComponent<any> = (props: GridProps) => 
     if (storage === null || layer === null) {
         logGrid('earthstar stuff is null');
         logGrid('//// render complete ////');
-        return <div>
-            To use this app,
+        return <div style={{padding: 'var(--s3)'}}>
+            <h1>Wafflegram</h1>
+            <p>A grid of images for you and your friends to mess with.</p>
+            <p>To use this app,</p>
             <ol>
                 <li>Join or create a workspace.</li>
-                <li>Create a user, or sign in as a user, from the upper right.</li>
+                <li>You will be in read-only mode until you sign in or create a user at the upper right.</li>
             </ol>
+            <p><a href="https://github.com/cinnamon-bun/wafflegram">Source code</a></p>
         </div>;
     }
 
