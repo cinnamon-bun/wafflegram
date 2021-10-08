@@ -6,6 +6,7 @@ import React, {
 } from 'react';
 
 import {
+    useCurrentAuthor,
     useStorage,
 } from 'react-earthstar';
 
@@ -23,13 +24,12 @@ import {
 // LOG
 
 let logGrid = (...args: any[]) => console.log('[grid]', ...args);
-let logCell = (...args: any[]) => console.log('  [cell]', ...args);
 
 //================================================================================
 
 let useForceRender = () => {
-    let [n, setN] = React.useState(0);
-    return () => setN(n + 1);
+    let [n, setN] = React.useState<number>(0);
+    return () => setN((n: number) => n + 1);
 };
 
 interface GridProps {
@@ -39,7 +39,7 @@ export let WafflegramGridView: React.FunctionComponent<any> = (props: GridProps)
     logGrid('---- rendering ----');
 
     //let [currentWorkspace] = useCurrentWorkspace();
-    //let [keypair] = useCurrentAuthor();
+    let [keypair] = useCurrentAuthor();
     let storage = useStorage();
     let forceRender = useForceRender();
 
@@ -58,7 +58,7 @@ export let WafflegramGridView: React.FunctionComponent<any> = (props: GridProps)
     // reload when the layer becomes ready
     useEffect(() => {
         if (layer === null) {
-            logGrid('useEffect: waiting for layer... but layer is nuull; skipping');
+            logGrid('useEffect: waiting for layer... but layer is null; skipping');
             return;
         }
         let wait = async () => {
@@ -74,11 +74,15 @@ export let WafflegramGridView: React.FunctionComponent<any> = (props: GridProps)
     // render when layer changes
     useEffect(() => {
         if (layer !== null) {
-            return layer.onChange(() => forceRender());
+            return layer.onChange(() => {
+                logGrid('useEffect: layer.onChange ----> forceRender');
+                forceRender()
+                logGrid('render should have happened');
+            });
         }
     }, [layer]);
 
-    let [maximizedCell, setMaximizedCell] = useState<Cell | null>(null);
+    let [maximizedCellKey, setMaximizedCellKey] = useState<string | null>(null);  // like '3-3'
 
     //--------------------------------------------------------------------------------
 
@@ -106,7 +110,6 @@ export let WafflegramGridView: React.FunctionComponent<any> = (props: GridProps)
     }
 
     logGrid('layer is ready, showing actual grid');
-    logGrid('//// render complete ////');
 
     let sGrid: CSSProperties = {
         display: 'grid',
@@ -128,22 +131,24 @@ export let WafflegramGridView: React.FunctionComponent<any> = (props: GridProps)
         backgroundColor: 'var(--cGridBorder)',
     };
 
-    let cells: Cell[] = [...layer.cells.values()];
-    if (maximizedCell !== null) {
-        // hack
-        cells = [maximizedCell];
+    let cellsToRender: Cell[] = [...layer.cells.values()];
+    if (maximizedCellKey !== null) {
+        cellsToRender = [layer.cells.get(maximizedCellKey) as Cell];
     }
 
-    logGrid(`I have ${cells.length} cells`);
+    logGrid(`Rendering ${cellsToRender.length} cells:`, cellsToRender);
+    logGrid('//// render complete ////');
     return <div>
         <div style={sGrid}>
-            {cells.map(cell =>
+            {cellsToRender.map(cell =>
                 <CellView
                     key={`${cell.x}-${cell.y}`}
                     cell={cell}
-                    isMaximized={maximizedCell === cell}
-                    onMaximize={() => setMaximizedCell(cell)}
-                    onMinimize={() => setMaximizedCell(null)}
+                    isMaximized={maximizedCellKey !== null}
+                    onMaximize={() => setMaximizedCellKey(`${cell.x}-${cell.y}`)}
+                    onMinimize={() => setMaximizedCellKey(null)}
+                    keypair={keypair}
+                    layer={layer}
                 />
             )}
         </div>

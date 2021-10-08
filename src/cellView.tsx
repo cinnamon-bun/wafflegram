@@ -3,12 +3,14 @@ import React, {
 } from 'react';
 
 import {
+    AuthorKeypair,
     Thunk,
 } from 'earthstar';
 
 import {
     Cell,
 } from './wafflegramTypes';
+import { GridLayer } from './gridLayer';
 
 /*
 import {
@@ -32,9 +34,11 @@ interface CellProps {
     isMaximized: boolean,
     onMaximize: Thunk,
     onMinimize: Thunk,
+    keypair: AuthorKeypair | null,
+    layer: GridLayer,
 }
 export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
-    let { cell, isMaximized, onMaximize, onMinimize } = props;
+    let { cell, isMaximized, onMaximize, onMinimize, keypair, layer } = props;
     logCell(`${cell.x}-${cell.y} -- ${cell.kind}`);
 
     let [isEditingCaption, setIsEditingCaption] = useState<boolean>(false);
@@ -123,8 +127,15 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
     // elements
 
     let beginEditingCaption = (evt: React.MouseEvent) => {
+        if (keypair === null) { return; }
         setTempCaption(cell.caption || '');
         setIsEditingCaption(true);
+        setTimeout(() => {
+            let inputElem = document.getElementById('captionInput');
+            if (inputElem) {
+                inputElem.focus();
+            }
+        }, 1);
     }
 
     let onCaptionChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,32 +143,51 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
     }
 
     let finishEditingCaption = (evt: React.FormEvent<HTMLFormElement>) => {
+        if (keypair === null) { return; }
         evt.stopPropagation();
         evt.preventDefault();
 
         setIsEditingCaption(false);
-        // TODO
-        logCell('todo: save new caption to layer', tempCaption);
+
+        logCell('Saving new caption to layer:', JSON.stringify(tempCaption));
+        let updatedCell: Cell = {
+            ...cell,
+            caption: tempCaption,
+        };
+        if (updatedCell.caption === undefined) {
+            delete updatedCell.caption;
+        }
+        // this should trigger a re-render
+        layer.saveCell(keypair, updatedCell);
     }
 
     let hasCaption = cell.caption !== undefined && cell.caption !== '';
+    let canEditCaption = keypair !== null;
+
     let captionElem: JSX.Element | null = null;
     if (isEditingCaption) {
         captionElem =
             <form onSubmit={finishEditingCaption}>
-                <input type="text"
+                <input type="text" id="captionInput"
                     style={sCaptionInput}
                     value={tempCaption}
                     onChange={onCaptionChange}
                     />
             </form>;
+    } else if (hasCaption) {
+        captionElem =
+            <div style={sCaption} onClick={beginEditingCaption}>
+                {cell.caption}
+            </div>;
+    } else if (isMaximized && canEditCaption) {
+        captionElem =
+            <div style={sCaption} onClick={beginEditingCaption}>
+                (click to add caption)
+            </div>;
     } else {
-        if (isMaximized || hasCaption) {
-            captionElem =
-                <div style={sCaption} onClick={beginEditingCaption}>
-                    {hasCaption ? cell.caption : '(click to add caption)'}
-                </div>;
-        }
+        // not maximized and no caption,
+        // or maximized but can't edit.
+        // do nothing.
     }
 
     let X = '\u2716';

@@ -15,17 +15,19 @@
     "react-dom": "^17.0.2",
     "react-earthstar": "^2.0.1",
     "react-scripts": "4.0.3",
+    "serve": "^12.0.1",
     "superbus": "1.2.0",
     "superbus-map": "1.1.0",
-    "typescript": "^4.1.2",
-    "web-vitals": "^1.0.1"
+    "typescript": "^4.1.2"
   },
   "scripts": {
     "start-with-browser": "react-scripts start",
     "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "serve": "serve -p 3000 build",
+    "build-and-serve": "npm run build && npm run serve"
   },
   "eslintConfig": {
     "extends": [

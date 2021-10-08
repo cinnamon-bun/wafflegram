@@ -5,7 +5,7 @@ import {
 } from './wafflegramTypes';
 
 export let config = {
-    USE_FAKE_DATA: true,
+    USE_FAKE_DATA: false,
 };
 
 // this is image/jpeg
