@@ -5,14 +5,14 @@ export interface GridConfig {
 }
 
 export type CellKind =
-    'IMAGE_URL'  // url to an image on the web
-    | 'COLOR'  // '#ff9900', or '' for blank
+    'COLOR'  // '#ff9900', or '' for blank
+    | 'IMAGE_URL'  // url to an image on the web
     | 'IMAGE_B64';  // raw b64 image data in jpeg format but with no mimetype or anything
 
 export interface Cell {
     x: number,
     y: number,
     kind: CellKind,
-    content: string,
+    content: string,  // color string, image url, image b64 data
     caption?: string,
 }

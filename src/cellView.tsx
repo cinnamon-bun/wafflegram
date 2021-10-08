@@ -34,10 +34,11 @@ interface CellProps {
     onMinimize: Thunk,
 }
 export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
-    let [isEditing, setOnEdit] = useState<boolean>(false);
-
     let { cell, isMaximized, onMaximize, onMinimize } = props;
     logCell(`${cell.x}-${cell.y} -- ${cell.kind}`);
+
+    let [isEditingCaption, setIsEditingCaption] = useState<boolean>(false);
+    let [tempCaption, setTempCaption] = useState<string>(cell.caption || '');
 
     //================================================================================
     // styles
@@ -57,24 +58,18 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
         padding: 'var(--s1)',
         textAlign: 'center',
     }
-    let sEditButton: CSSProperties = {
+    let sCaptionInput: CSSProperties = {
+        // TODO
+        color: 'var(--base0A)',
+        font: 'inherit',
+        fontSize: 'inherit',
         position: 'absolute',
-        color: 'var(--cEdit)',
-        top: 0, left: 0,
-        width: '3em',
-        height: 'max(40px, 7%)',
-        background: 'var(--cUnderlayStrong)',
-        fontWeight: 'bold',
+        bottom: 0, left: 0, right: 0,
+        width: '100%',
+        background: 'var(--cUnderlayWeak)',
+        padding: 'var(--s1)',
         textAlign: 'center',
-        border: 'inherit',
-        fontFamily: 'inherit',
-        fontSize: '1.5rem',
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 'var(--round-button)',
-    }
-    let sSaveButton: CSSProperties = {
-        ...sEditButton,
-        color: 'var(--cSave)',
+        border: 'none',
     }
     let sCloseButton: CSSProperties = {
         position: 'absolute',
@@ -127,26 +122,43 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
     //================================================================================
     // elements
 
-    let hasCaption = cell.caption !== undefined && cell.caption !== '';
-    let showCaption = hasCaption  || (isMaximized && cell.kind === 'IMAGE_URL' && cell.content !== '');
-    let captionWithLinkElem: JSX.Element | null = null;
-    if (showCaption) {
-        captionWithLinkElem =
-            <div style={sCaption}>
-                {cell.caption}
-                {(cell.kind === 'IMAGE_URL' && cell.content !== '')
-                    ? <span> &nbsp; <a href={cell.content}>(link)</a></span>
-                    : null
-                }
-            </div>;
+    let beginEditingCaption = (evt: React.MouseEvent) => {
+        setTempCaption(cell.caption || '');
+        setIsEditingCaption(true);
     }
 
-    let saveButtonElem = 
-        <button style={isEditing ? sEditButton : sSaveButton}
-            onClick={ (evt) => { evt.stopPropagation(); setOnEdit(!isEditing); } }
-            >
-            {isEditing ? "Save" : "Edit"}
-        </button>;
+    let onCaptionChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+        setTempCaption(evt.target.value);
+    }
+
+    let finishEditingCaption = (evt: React.FormEvent<HTMLFormElement>) => {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        setIsEditingCaption(false);
+        // TODO
+        logCell('todo: save new caption to layer', tempCaption);
+    }
+
+    let hasCaption = cell.caption !== undefined && cell.caption !== '';
+    let captionElem: JSX.Element | null = null;
+    if (isEditingCaption) {
+        captionElem =
+            <form onSubmit={finishEditingCaption}>
+                <input type="text"
+                    style={sCaptionInput}
+                    value={tempCaption}
+                    onChange={onCaptionChange}
+                    />
+            </form>;
+    } else {
+        if (isMaximized || hasCaption) {
+            captionElem =
+                <div style={sCaption} onClick={beginEditingCaption}>
+                    {hasCaption ? cell.caption : '(click to add caption)'}
+                </div>;
+        }
+    }
 
     let X = '\u2716';
     let closeButtonElem =
@@ -159,13 +171,7 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
     //================================================================================
 
     return <div style={sCell} onClick={onMaximize}>
-        {captionWithLinkElem}
-        {isMaximized
-            ? <>
-                {saveButtonElem}
-                {closeButtonElem}
-            </>
-            : null
-        }
+        {captionElem}
+        {isMaximized ? closeButtonElem : null}
     </div>;
 }
