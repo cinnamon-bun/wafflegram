@@ -130,6 +130,10 @@
     --cLinkExt:   var(--base0D);  /* blue */
                    /* --base0E       purple */
     --cCode:      var(--base0F);  /* magenta or brown */
+
+    --cEdit: var(--base0C);
+    --cSave: var(--base0B);
+    --cCancel: var(--base08);
 }
 
 * {

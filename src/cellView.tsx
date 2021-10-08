@@ -1,5 +1,5 @@
 import React, {
-    CSSProperties
+    CSSProperties, useState
 } from 'react';
 
 import {
@@ -34,11 +34,17 @@ interface CellProps {
     onMinimize: Thunk,
 }
 export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
+    let [isEditing, setOnEdit] = useState<boolean>(false);
+
     let { cell, isMaximized, onMaximize, onMinimize } = props;
     logCell(`${cell.x}-${cell.y} -- ${cell.kind}`);
 
+    //================================================================================
+    // styles
+
     let sCell: CSSProperties = {
         backgroundColor: 'var(--cEmptyCell)',
+        //border: '2px solid var(--cEmptyCell)',
         borderRadius: 'var(--round-card)',
         overflow: 'hidden',
         position: 'relative',
@@ -51,6 +57,25 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
         padding: 'var(--s1)',
         textAlign: 'center',
     }
+    let sEditButton: CSSProperties = {
+        position: 'absolute',
+        color: 'var(--cEdit)',
+        top: 0, left: 0,
+        width: '3em',
+        height: 'max(40px, 7%)',
+        background: 'var(--cUnderlayStrong)',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        border: 'inherit',
+        fontFamily: 'inherit',
+        fontSize: '1.5rem',
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 'var(--round-button)',
+    }
+    let sSaveButton: CSSProperties = {
+        ...sEditButton,
+        color: 'var(--cSave)',
+    }
     let sCloseButton: CSSProperties = {
         position: 'absolute',
         color: 'var(--cSemiFaint)',
@@ -58,6 +83,7 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
         width: 'max(40px, 7%)',
         height: 'max(40px, 7%)',
         background: 'var(--cUnderlayStrong)',
+        fontWeight: 'bold',
         textAlign: 'center',
         border: 'inherit',
         fontFamily: 'inherit',
@@ -98,29 +124,47 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
         sCell.background = `center / cover no-repeat url(${url})`;
     }
 
-    let hasCaption = cell.caption !== undefined && cell.caption !== '';
-    let captionWithLink = <div style={sCaption}>
-        {cell.caption}
-        {(cell.kind === 'IMAGE_URL' && cell.content !== '')
-            ? <span> &nbsp; <a href={cell.content}>(link)</a></span>
-            : null
-        }
-    </div>;
-    let showCaption = hasCaption || (isMaximized && cell.kind === 'IMAGE_URL' && cell.content !== '');
+    //================================================================================
+    // elements
 
+    let hasCaption = cell.caption !== undefined && cell.caption !== '';
+    let showCaption = hasCaption  || (isMaximized && cell.kind === 'IMAGE_URL' && cell.content !== '');
+    let captionWithLinkElem: JSX.Element | null = null;
+    if (showCaption) {
+        captionWithLinkElem =
+            <div style={sCaption}>
+                {cell.caption}
+                {(cell.kind === 'IMAGE_URL' && cell.content !== '')
+                    ? <span> &nbsp; <a href={cell.content}>(link)</a></span>
+                    : null
+                }
+            </div>;
+    }
+
+    let saveButtonElem = 
+        <button style={isEditing ? sEditButton : sSaveButton}
+            onClick={ (evt) => { evt.stopPropagation(); setOnEdit(!isEditing); } }
+            >
+            {isEditing ? "Save" : "Edit"}
+        </button>;
 
     let X = '\u2716';
-    return <div style={sCell} onClick={onMaximize}>
-        {/* caption bar, if needed */}
-        {showCaption ? captionWithLink : null }
+    let closeButtonElem =
+        <button style={sCloseButton}
+            onClick={ (evt) => { evt.stopPropagation(); onMinimize(); }}
+            >
+            {X}
+        </button>;
 
-        {/* minimize button, if needed */}
+    //================================================================================
+
+    return <div style={sCell} onClick={onMaximize}>
+        {captionWithLinkElem}
         {isMaximized
-            ? <button style={sCloseButton}
-                onClick={ (evt) => {evt.stopPropagation(); onMinimize(); }}
-                >
-                    {X}
-                </button>
+            ? <>
+                {saveButtonElem}
+                {closeButtonElem}
+            </>
             : null
         }
     </div>;
