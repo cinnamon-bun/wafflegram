@@ -85,6 +85,13 @@ export let WafflegramGridView: React.FunctionComponent<any> = (props: GridProps)
         wait();
     }, [layer]);
 
+    // render when layer changes
+    useEffect(() => {
+        if (layer !== null) {
+            return layer.onChange(() => forceRender());
+        }
+    }, [layer]);
+
     let [maximizedCell, setMaximizedCell] = useState<Cell | null>(null);
 
     //--------------------------------------------------------------------------------

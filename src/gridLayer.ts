@@ -31,6 +31,7 @@ export class GridLayer {
     cells: Map<string, Cell>;
     readyPromise: Promise<boolean>;
     isReady: boolean = false;
+    onChangeCbs: Set<Thunk> = new Set();
     id: number;
     constructor(storage: IStorageAsync, gridName: string = 'main') {
         this.id = Math.random();
@@ -43,6 +44,15 @@ export class GridLayer {
         logLayer(`constructor: hatching`);
         this.readyPromise = this.hatch();
         logLayer(`constructor: done.`);
+    }
+    onChange(cb: Thunk): Thunk {
+        this.onChangeCbs.add(cb);
+        return () => { this.onChangeCbs.delete(cb); };
+    }
+    _bump(): void {
+        for (let cb of this.onChangeCbs) {
+            cb();
+        }
     }
     async hatch(): Promise<boolean> {
         logLayer(`hatch ---`, this.id);
@@ -97,6 +107,7 @@ export class GridLayer {
         logLayer(`hatch: sleeping, almost done`);
         //await sleep(1000);
         logLayer(`hatch: done`, this.id);
+        this._bump();
         this.isReady = true;
         return true;
     }
@@ -110,5 +121,6 @@ export class GridLayer {
         if (isErr(result) || result === WriteResult.Ignored) {
             console.error(result);
         }
+        this._bump();
     }
 }
