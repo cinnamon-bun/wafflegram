@@ -9,7 +9,7 @@ import {
 import { setLogLevels } from 'earthstar';
 
 import {
-    WafflegramGrid
+    WafflegramGridView
 } from './wafflegram';
 
 import 'react-earthstar/styles/layout.css';
@@ -33,7 +33,7 @@ function App() {
                 </div>
                 <LocalStorageSettingsWriter storageKey="wafflegram" />
                 <div id="app-root">
-                    <WafflegramGrid />
+                    <WafflegramGridView />
                 </div>
             </EarthstarPeer>
         </div>
