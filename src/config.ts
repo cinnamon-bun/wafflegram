@@ -637,7 +637,6 @@ S9WM6GGqEER2S2QzGUsqZAQuBMGn8Axi5VhcJl5cwanLeZSkAU8mYBWw3nMHyiMv
 xAOOFb3NelcMOv7EKBslLFErKNzdIFsMOAsl3G5JWyhAQJjiOGZCfGITLrmPmFu6
 iP8ABCUqDtF1wSvkq2F5lt8wrbmGAbhM/KZUJXVlbibs9tMtfgJ//9k=
 `.replaceAll(/\n/g, '');
-console.log(img64otter);
 
 export let FAKE_DATA_CELLS: Record<string, Cell> = {
     '0-0': { x: 0, y: 0, kind: 'COLOR', content: '', caption: 'cells can have long captions that will word-wrap if they are too long' },
