@@ -11,6 +11,7 @@ import {
     Cell,
 } from './wafflegramTypes';
 import { GridLayer } from './gridLayer';
+import { inherits } from 'util';
 
 /*
 import {
@@ -42,6 +43,7 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
     logCell(`${cell.x}-${cell.y} -- ${cell.kind}`);
 
     let [isEditingCaption, setIsEditingCaption] = useState<boolean>(false);
+    let [isEditing, setIsEditing] = useState<boolean>(false);
     let [tempCaption, setTempCaption] = useState<string>(cell.caption || '');
 
     //================================================================================
@@ -75,19 +77,36 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
         textAlign: 'center',
         border: 'none',
     }
-    let sCloseButton: CSSProperties = {
+    let sCornerButton: CSSProperties = {
         position: 'absolute',
         color: 'var(--cSemiFaint)',
-        top: 0, right: 0,
-        width: 'max(40px, 7%)',
-        height: 'max(40px, 7%)',
         background: 'var(--cUnderlayStrong)',
+        height: 'max(40px, 7%)',
         fontWeight: 'bold',
         textAlign: 'center',
         border: 'inherit',
         fontFamily: 'inherit',
         fontSize: '1.5rem',
+    }
+    let sCloseButton: CSSProperties = {
+        ...sCornerButton,
+        color: 'var(--cSemiFaint)',
+        background: 'var(--cUnderlayStrong)',
+        top: 0, right: 0,
+        width: 'max(40px, 7%)',
         borderBottomLeftRadius: 'var(--round-button)',
+    }
+    let sEditButton: CSSProperties = {
+        ...sCornerButton,
+        color: 'var(--cEdit)',
+        background: 'var(--cUnderlayStrong)',
+        top: 0, left: 0,
+        width: '3em',
+        borderBottomRightRadius: 'var(--round-button)',
+    }
+    let sSaveButton: CSSProperties = {
+        ...sEditButton,
+        color: 'var(--cSave)',
     }
 
     // set grid position
@@ -190,6 +209,17 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
         // do nothing.
     }
 
+    let handleEditOrSave = () => {
+        setIsEditing(!isEditing);
+    }
+
+    let editButtonElem =
+        <button style={isEditing ? sSaveButton : sEditButton}
+            onClick={ (evt) => { evt.stopPropagation(); handleEditOrSave(); }}
+            >
+            {isEditing ? 'Save' : 'Edit'}
+        </button>;
+
     let X = '\u2716';
     let closeButtonElem =
         <button style={sCloseButton}
@@ -200,8 +230,11 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
 
     //================================================================================
 
+    logCell('isMaximized:', isMaximized);
+
     return <div style={sCell} onClick={onMaximize}>
         {captionElem}
+        {isMaximized ? editButtonElem : null}
         {isMaximized ? closeButtonElem : null}
     </div>;
 }
