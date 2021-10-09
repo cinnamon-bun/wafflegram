@@ -1,6 +1,7 @@
 import React, {
     CSSProperties, useState
 } from 'react';
+import deepEqual from 'fast-deep-equal';
 
 import {
     AuthorKeypair,
@@ -11,7 +12,6 @@ import {
     Cell,
 } from './wafflegramTypes';
 import { GridLayer } from './gridLayer';
-import { inherits } from 'util';
 
 /*
 import {
@@ -42,7 +42,6 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
     let { cell, isMaximized, onMaximize, onMinimize, keypair, layer } = props;
     logCell(`${cell.x}-${cell.y} -- ${cell.kind}`);
 
-    let [isEditingCaption, setIsEditingCaption] = useState<boolean>(false);
     let [isEditing, setIsEditing] = useState<boolean>(false);
     let [tempCaption, setTempCaption] = useState<string>(cell.caption || '');
 
@@ -145,15 +144,19 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
     //================================================================================
     // elements
 
-    let beginEditingCaption = (evt: React.MouseEvent) => {
+    let beginOrFinishEditing = () => {
+        if (!isEditing) { beginEditing(); }
+        else { finishEditing(); }
+    }
+
+    let beginEditing = () => {
         if (keypair === null) { return; }
+        if (isEditing === true) { return; }
         setTempCaption(cell.caption || '');
-        setIsEditingCaption(true);
+        setIsEditing(true);
         setTimeout(() => {
             let inputElem = document.getElementById('captionInput');
-            if (inputElem) {
-                inputElem.focus();
-            }
+            if (inputElem) { inputElem.focus(); }
         }, 1);
     }
 
@@ -161,14 +164,10 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
         setTempCaption(evt.target.value);
     }
 
-    let finishEditingCaption = (evt: React.FormEvent<HTMLFormElement>) => {
+    let finishEditing = () => {
         if (keypair === null) { return; }
-        evt.stopPropagation();
-        evt.preventDefault();
-
-        setIsEditingCaption(false);
-
-        logCell('Saving new caption to layer:', JSON.stringify(tempCaption));
+        if (isEditing === false) { return; }
+        logCell('Saving new cell data to layer:', JSON.stringify(tempCaption));
         let updatedCell: Cell = {
             ...cell,
             caption: tempCaption,
@@ -177,16 +176,22 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
             delete updatedCell.caption;
         }
         // this should trigger a re-render
-        layer.saveCell(keypair, updatedCell);
+        if (!deepEqual(cell, updatedCell)) {
+            layer.saveCell(keypair as AuthorKeypair, updatedCell);
+        }
+        setIsEditing(false);
+    }
+    let cancelEditing = () => {
+        setIsEditing(false);
     }
 
     let hasCaption = cell.caption !== undefined && cell.caption !== '';
-    let canEditCaption = keypair !== null;
+    let canEdit = keypair !== null;
 
     let captionElem: JSX.Element | null = null;
-    if (isEditingCaption) {
+    if (isEditing) {
         captionElem =
-            <form onSubmit={finishEditingCaption}>
+            <form onSubmit={ (evt) => { evt.stopPropagation(); evt.preventDefault(); finishEditing(); }}>
                 <input type="text" id="captionInput"
                     style={sCaptionInput}
                     value={tempCaption}
@@ -195,27 +200,24 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
             </form>;
     } else if (hasCaption) {
         captionElem =
-            <div style={sCaption} onClick={beginEditingCaption}>
+            <div style={sCaption}
+                onClick={ (evt) => {
+                    evt.stopPropagation();
+                    evt.preventDefault();
+                    if (isMaximized) {
+                        beginEditing();
+                    } else {
+                        onMaximize();
+                    }
+                }}
+                >
                 {cell.caption}
             </div>;
-    } else if (isMaximized && canEditCaption) {
-        captionElem =
-            <div style={sCaption} onClick={beginEditingCaption}>
-                (click to add caption)
-            </div>;
-    } else {
-        // not maximized and no caption,
-        // or maximized but can't edit.
-        // do nothing.
-    }
-
-    let handleEditOrSave = () => {
-        setIsEditing(!isEditing);
     }
 
     let editButtonElem =
         <button style={isEditing ? sSaveButton : sEditButton}
-            onClick={ (evt) => { evt.stopPropagation(); handleEditOrSave(); }}
+            onClick={ (evt) => { evt.stopPropagation(); evt.preventDefault(); beginOrFinishEditing(); }}
             >
             {isEditing ? 'Save' : 'Edit'}
         </button>;
@@ -223,18 +225,16 @@ export let CellView: React.FunctionComponent<any> = (props: CellProps) => {
     let X = '\u2716';
     let closeButtonElem =
         <button style={sCloseButton}
-            onClick={ (evt) => { evt.stopPropagation(); onMinimize(); }}
+            onClick={ (evt) => { evt.stopPropagation(); evt.preventDefault(); cancelEditing(); onMinimize(); }}
             >
             {X}
         </button>;
 
     //================================================================================
 
-    logCell('isMaximized:', isMaximized);
-
     return <div style={sCell} onClick={onMaximize}>
         {captionElem}
-        {isMaximized ? editButtonElem : null}
+        {(isMaximized && canEdit) ? editButtonElem : null}
         {isMaximized ? closeButtonElem : null}
     </div>;
 }
